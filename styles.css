@@ -12,36 +12,56 @@ body {
 }
 
 h1 {
+  position: relative;
   text-align: center;
   font-size: 2.8em;
   margin-bottom: 5px;
-  position: relative;
   background: linear-gradient(45deg, #fff, #ffd700, #fff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: shine 3s ease-in-out infinite;
 }
 
+/* Sparkle effect on title using pseudo-elements */
+h1::before, h1::after {
+  content: "✨";
+  position: absolute;
+  font-size: 1em;
+  opacity: 0;
+  animation: sparkle 2s infinite;
+}
+
+h1::before {
+  top: -10px;
+  left: 20%;
+  animation-delay: 0.3s;
+}
+
+h1::after {
+  bottom: -10px;
+  right: 20%;
+  animation-delay: 0.6s;
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
 @keyframes shine {
   0% { filter: brightness(1); }
   50% { filter: brightness(1.5); }
   100% { filter: brightness(1); }
-}
-
-/* Loading overlay */
-#loadingOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
-  color: #d4af37;
-  font-size: 2em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 20000;
 }
 
 /* Briefcases Grid */
@@ -112,7 +132,7 @@ h1 {
   z-index: 10000;
 }
 
-/* Container with glassmorphism effect */
+/* Container for game area and side panels with glassmorphism effect */
 .container {
   display: flex;
   max-width: 800px;
