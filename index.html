@@ -6,18 +6,23 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Loading overlay -->
+  <div id="loadingOverlay">Loading...</div>
+  
   <h1>Deal or No Deal</h1>
+  
   <!-- Grid of briefcases (only unopened boxes) -->
   <div id="briefcasesContainer"></div>
   
   <div class="container" id="gameContainer">
-    <!-- Main game area for messages/offers -->
+    <!-- Main game area for messages, offers, and round indicator -->
     <div id="gameArea">
+      <div id="roundIndicator">Round: 1</div>
       <p class="message" id="gameMessage">
         Click a briefcase to choose your personal box.
       </p>
     </div>
-    <!-- Side panel: Prize board and bank offers history -->
+    <!-- Side panel: Prize board and previous bank offers -->
     <div id="rightArea">
       <h2>Prizes</h2>
       <ul id="prizeBoard"></ul>
@@ -28,6 +33,10 @@
 
   <!-- Fireworks container (if needed) -->
   <div id="fireworksContainer"></div>
+  
+  <!-- Audio elements for sound effects (provide your own files) -->
+  <audio id="clickSound" src="click.mp3"></audio>
+  <audio id="offerSound" src="offer.mp3"></audio>
 
   <script>
     // ----- Data Setup -----
@@ -54,11 +63,11 @@
     let boxesLeft = boxes.slice();  // Boxes not yet opened (does NOT include personal box after selection)
     let valuesRemaining = prizes.slice();  // Prizes still in play
     let currentRound = 0;
-    const rounds = [6, 5, 4, 3, 2, 1, 1, 1, 1];  // Number of boxes to open per round
+    const rounds = [6, 5, 4, 3, 2, 1, 1, 1, 1];  // Boxes to open per round
     let openedCount = 0;            // Boxes opened in current round
     let offersHistory = [];
     let offerActive = false;        // True if a banker's offer is active
-    
+
     // ----- Rendering Functions -----
     function renderBriefcases() {
       const container = document.getElementById('briefcasesContainer');
@@ -70,9 +79,9 @@
         briefcase.textContent = box; // Show box number
         briefcase.onclick = function () {
           if (offerActive) {
-            // When offer is active, ignore clicks.
-            return;
+            return;  // Ignore clicks if offer active
           }
+          playSound('clickSound');
           briefcaseClicked(box);
         };
         container.appendChild(briefcase);
@@ -108,6 +117,10 @@
       updateOffersHistory();
     }
     
+    function updateRoundIndicator() {
+      document.getElementById("roundIndicator").textContent = "Round: " + (currentRound + 1);
+    }
+    
     function updateGameArea(htmlContent) {
       const gameArea = document.getElementById('gameArea');
       gameArea.innerHTML = htmlContent;
@@ -116,7 +129,6 @@
     
     // ----- Game Functions -----
     function briefcaseClicked(box) {
-      // If no personal box has been chosen, choose this one.
       if (!chosenBox) {
         chosenBox = box;
         boxesLeft = boxesLeft.filter(b => b !== box);
@@ -125,17 +137,17 @@
         renderBriefcases();
       } else {
         if (box === chosenBox) {
-          return; // Ignore click on personal box.
+          return;
         }
         if (!boxesLeft.includes(box)) {
-          return; // Already opened.
+          return;
         }
         openBriefcase(box);
       }
       updateSidePanels();
+      updateRoundIndicator();
     }
     
-    // Animate and open a briefcase by creating a clone that expands to the center.
     function openBriefcase(box) {
       const briefcase = document.getElementById("briefcase-" + box);
       let clone = briefcase.cloneNode(true);
@@ -143,35 +155,33 @@
       clone.classList.add("center-open");
       document.body.appendChild(clone);
       
-      // Remove the box from available boxes.
       boxesLeft = boxesLeft.filter(b => b !== box);
       const idx = valuesRemaining.indexOf(boxValues[box]);
       if (idx > -1) { valuesRemaining.splice(idx, 1); }
       renderBriefcases();
       
       openedCount++;
-      // If round threshold is reached, trigger banker's offer faster (after 2000ms)
       if (openedCount >= rounds[currentRound]) {
         offerActive = true;
+        // Play bank offer sound.
+        playSound('offerSound');
         setTimeout(() => {
           offerDeal();
           currentRound++;
           openedCount = 0;
+          updateRoundIndicator();
         }, 2000);
       }
       
-      // If only one box remains, trigger final swap.
       if (boxesLeft.length === 1) {
         setTimeout(() => {
           finalSwap();
         }, 2000);
       }
       
-      // Remove the clone after 4 seconds.
       setTimeout(() => { clone.remove(); }, 4000);
     }
     
-    // Final swap: ask the player if they want to keep or swap.
     function finalSwap() {
       offerActive = true;
       updateGameArea(`
@@ -197,13 +207,11 @@
       `);
     }
     
-    // Calculate banker's offer as the average of remaining prizes.
     function getBankersOffer(values) {
       const sum = values.reduce((acc, curr) => acc + curr, 0);
       return sum / values.length;
     }
     
-    // Trigger the banker's offer.
     function offerDeal() {
       const offer = getBankersOffer(valuesRemaining);
       offersHistory.push(offer);
@@ -224,7 +232,6 @@
       if (offer > 100000) { launchFireworks(); }
     }
     
-    // Updated declineDeal: now displays how many boxes remain to be opened in the round.
     function declineDeal() {
       offerActive = false;
       const remainingToOpen = rounds[currentRound] - openedCount;
@@ -232,10 +239,10 @@
       setTimeout(() => {
         document.getElementById("gameMessage").textContent = "Continue opening boxes by clicking on them.";
         renderBriefcases();
+        updateSidePanels();
       }, 2000);
     }
     
-    // Fireworks effect.
     function launchFireworks() {
       const container = document.getElementById("fireworksContainer");
       container.innerHTML = "";
@@ -256,9 +263,23 @@
       window.location.reload();
     }
     
+    // Utility: Play sound effects.
+    function playSound(id) {
+      const sound = document.getElementById(id);
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
+    
     // ----- Initial Rendering -----
-    renderBriefcases();
-    updateSidePanels();
+    window.onload = function() {
+      // Hide the loading overlay once loaded.
+      document.getElementById("loadingOverlay").style.display = "none";
+      renderBriefcases();
+      updateSidePanels();
+      updateRoundIndicator();
+    };
   </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
-/* Base Styles */
+/* Import modern font */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
+/* Base Styles */
 body {
   margin: 0;
   padding: 5px;
@@ -27,6 +28,22 @@ h1 {
   100% { filter: brightness(1); }
 }
 
+/* Loading overlay */
+#loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  color: #d4af37;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+
 /* Briefcases Grid */
 #briefcasesContainer {
   display: grid;
@@ -36,7 +53,7 @@ h1 {
   margin: 0 auto 5px auto;
 }
 
-/* Styling for each briefcase (silver with black text, centered) */
+/* Styling for each briefcase in silver with centered black text */
 .briefcase {
   background-color: #C0C0C0;
   border: 2px solid #C0C0C0;
@@ -50,12 +67,13 @@ h1 {
   font-size: 1.1em;
   color: #000;
   user-select: none;
-  transition: transform 0.2s, background-color 0.3s;
+  transition: transform 0.2s, background-color 0.3s, box-shadow 0.2s;
 }
 
 .briefcase:hover {
   transform: scale(1.05);
   background-color: #b8b8b8;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
 .briefcase.personal {
@@ -94,7 +112,7 @@ h1 {
   z-index: 10000;
 }
 
-/* Container for game area and side panels with glassmorphism effect */
+/* Container with glassmorphism effect */
 .container {
   display: flex;
   max-width: 800px;
@@ -105,6 +123,12 @@ h1 {
   background: rgba(17, 17, 17, 0.9);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
   border: 2px solid #d4af37;
+}
+
+/* Round indicator styling */
+#roundIndicator {
+  font-size: 1.2em;
+  margin-bottom: 10px;
 }
 
 /* Left Game Area */
