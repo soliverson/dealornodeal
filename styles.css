@@ -1,187 +1,223 @@
 /* Base Styles */
-html, body {
-    margin: 0;
-    padding: 0;
-    /* Removed overflow: hidden so that container border is fully visible */
-    background-color: #000;
-    color: #d4af37;
-    font-family: Arial, sans-serif;
-    box-sizing: border-box;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 5px;
+  background: linear-gradient(135deg, #000, #222);
+  color: #d4af37;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3em;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.8em;
+  margin-bottom: 5px;
+  position: relative;
+  background: linear-gradient(45deg, #fff, #ffd700, #fff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
+}
+
+/* Briefcases Grid */
+#briefcasesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 5px;
+  max-width: 800px;
+  margin: 0 auto 5px auto;
+}
+
+/* Styling for each briefcase (silver with black text, centered) */
+.briefcase {
+  background-color: #C0C0C0;
+  border: 2px solid #C0C0C0;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.1em;
+  color: #000;
+  user-select: none;
+  transition: transform 0.2s, background-color 0.3s;
+}
+
+.briefcase:hover {
+  transform: scale(1.05);
+  background-color: #b8b8b8;
+}
+
+.briefcase.personal {
+  background-color: #999;
+  border-color: #ffd700;
+  color: #000;
+}
+
+/* Animation for the center open effect */
+@keyframes centerExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+    opacity: 1;
   }
-  
-  *, *::before, *::after {
-    box-sizing: inherit;
+  25% {
+    transform: translate(-50%, -50%) scale(3) rotateY(-90deg);
+    opacity: 1;
   }
-  
-  /* Adjusted body padding and font size for a compact view */
-  body {
-    padding: 5px;
-    font-size: 1em;
+  75% {
+    transform: translate(-50%, -50%) scale(3) rotateY(-90deg);
+    opacity: 1;
   }
-  
-  h1 {
-    text-align: center;
-    font-size: 2.2em;  /* Slightly smaller title */
-    margin-bottom: 5px;
-    position: relative;
-    background: linear-gradient(45deg, #fff, #ffd700, #fff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 3s ease-in-out infinite;
+  100% {
+    transform: translate(-50%, -50%) scale(3) rotateY(-90deg);
+    opacity: 0;
   }
-  
-  @keyframes shine {
-    0% { filter: brightness(1); }
-    50% { filter: brightness(1.5); }
-    100% { filter: brightness(1); }
+}
+
+.center-open {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.4em;
+  animation: centerExpand 4s forwards;
+  z-index: 10000;
+}
+
+/* Container for game area and side panels with glassmorphism effect */
+.container {
+  display: flex;
+  max-width: 800px;
+  height: calc(100vh - 80px);
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 15px;
+  background: rgba(17, 17, 17, 0.9);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  border: 2px solid #d4af37;
+}
+
+/* Left Game Area */
+#gameArea {
+  flex: 2;
+  padding: 10px;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+/* Right Side: Prize Board and Offers */
+#rightArea {
+  flex: 1;
+  border-left: 2px solid #d4af37;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 1.1em;
+}
+
+/* Message Styling */
+.message {
+  margin-bottom: 10px;
+  line-height: 1.3;
+  font-size: 1.2em;
+}
+
+/* List Styling */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1em;
+}
+
+li {
+  margin: 4px 0;
+  font-size: 1.1em;
+}
+
+li.eliminated {
+  color: gray;
+  text-decoration: line-through;
+}
+
+/* Button Styling */
+button {
+  background: linear-gradient(45deg, #d4af37, #ffcf00);
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 12px;
+  font-size: 1.3em;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Fireworks Styles */
+#fireworksContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.firework {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #fff, rgba(212, 175, 55, 0));
+  border-radius: 50%;
+  animation: explode 1.5s ease-out forwards;
+}
+
+@keyframes explode {
+  0% {
+    transform: scale(1);
+    opacity: 1;
   }
-  
-  /* Container setup to fit within the viewport */
+  100% {
+    transform: scale(5);
+    opacity: 0;
+  }
+}
+
+/* Responsive Styles for Smaller Screens */
+@media (max-width: 768px) {
+  #briefcasesContainer {
+    grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+  }
   .container {
-    display: flex;
-    flex-direction: row;
-    max-width: 800px;
-    height: calc(100vh - 60px); /* Leave space for the title */
-    margin: 5px auto;  /* Small margin ensures full border is visible */
-    padding: 0; /* Padding is handled by inner elements */
-    border: 2px solid #d4af37;
-    border-radius: 10px;
-    background-color: #111;
+    flex-direction: column;
+    max-width: 100%;
+    height: auto;
+    padding: 10px;
   }
-  
-  /* Left and Right Areas */
-  #leftArea, #rightArea {
-    padding: 5px;
-  }
-  
-  /* Left Area: Center content */
-  #leftArea {
-    flex: 2;
-    padding-right: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  #gameArea {
-    width: 100%;
-    text-align: center;
-    padding: 5px;
-    box-sizing: border-box;
-  }
-  
-  /* Right Area: Prize board and offers history */
   #rightArea {
-    flex: 1;
-    border-left: 2px solid #d4af37;
-    padding-left: 5px;
-    overflow-y: auto;
+    border-left: none;
+    padding-left: 0;
+    margin-top: 10px;
+    max-height: 200px;
   }
-  
-  /* Button Styles */
-  button {
-    background-color: #d4af37;
-    color: #000;
-    border: none;
-    padding: 6px 12px;
-    margin: 3px;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 0.9em;
+  h1 {
+    font-size: 2em;
   }
-  
-  button:hover {
-    opacity: 0.8;
-  }
-  
-  /* Message and Select Styling */
-  .message {
-    margin-bottom: 5px;
-    line-height: 1.3;
-  }
-  
-  select {
-    padding: 4px;
-    margin-bottom: 5px;
-    border: 1px solid #d4af37;
-    border-radius: 5px;
-    font-size: 0.9em;
-    width: 80%;
-    box-sizing: border-box;
-  }
-  
-  /* List Styling */
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  li {
-    margin: 2px 0;
-    font-size: 0.9em;
-  }
-  
-  li.eliminated {
-    color: gray;
-    text-decoration: line-through;
-  }
-  
-  /* Fireworks Styles */
-  #fireworksContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 9999;
-  }
-  
-  .firework {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, #fff, rgba(212, 175, 55, 0));
-    border-radius: 50%;
-    animation: explode 1.5s ease-out forwards;
-  }
-  
-  @keyframes explode {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(5);
-      opacity: 0;
-    }
-  }
-  
-  /* Responsive Styles for Smaller Screens */
-  @media (max-width: 768px) {
-    .container {
-      flex-direction: column;
-      max-width: 100%;
-      height: auto;
-      padding: 5px;
-    }
-    
-    #rightArea {
-      border-left: none;
-      padding-left: 0;
-      margin-top: 10px;
-      max-height: 200px;
-    }
-    
-    h1 {
-      font-size: 2em;
-    }
-    
-    body {
-      font-size: 0.95em;
-      padding: 5px;
-    }
-  }
-  
+}
