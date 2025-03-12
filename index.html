@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Deal or No Deal Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Deal or No Deal</h1>
+  <div class="container" id="gameContainer">
+    <!-- Left side: Game area -->
+    <div id="leftArea">
+      <div id="gameArea">
+        <p class="message">Welcome to Deal or No Deal! There are 26 boxes with hidden values.</p>
+        <p class="message">Please choose the number of your personal box:</p>
+        <select id="chosenBoxSelect"></select>
+        <button onclick="chooseBox()">Submit</button>
+      </div>
+    </div>
+    <!-- Right side: Prize board and bank offers history -->
+    <div id="rightArea">
+      <h2>Prizes</h2>
+      <ul id="prizeBoard"></ul>
+      <h2>Previous Bank Offers</h2>
+      <ul id="offersHistory"></ul>
+    </div>
+  </div>
+
+  <!-- Fireworks container (hidden until needed) -->
+  <div id="fireworksContainer"></div>
+
+  <script>
+    // Define the list of prizes.
+    const prizes = [0.01, 1, 5, 10, 25, 50, 75, 100, 200, 300, 400, 500, 
+                    750, 1000, 5000, 10000, 25000, 50000, 75000, 100000, 
+                    200000, 300000, 400000, 500000, 750000, 1000000];
+    let boxes = Array.from({ length: 26 }, (_, i) => i + 1);
+
+    // Array to store previous bank offers.
+    let offersHistory = [];
+
+    // Fisher-Yates shuffle.
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // Randomly assign prizes to boxes.
+    shuffle(prizes);
+    const boxValues = {};
+    boxes.forEach((box, index) => {
+      boxValues[box] = prizes[index];
+    });
+
+    // Global game state.
+    let chosenBox = null;
+    let valuesRemaining = prizes.slice();
+    let boxesLeft = boxes.slice();
+    let currentRound = 0;
+    const rounds = [6, 5, 4, 3, 2, 1, 1, 1, 1];
+
+    const gameArea = document.getElementById('gameArea');
+
+    // Update the prize board (right side).
+    function updatePrizeBoard() {
+      const prizeBoard = document.getElementById('prizeBoard');
+      // Sort prizes ascending.
+      const sortedPrizes = [...prizes].sort((a, b) => a - b);
+      prizeBoard.innerHTML = '';
+      sortedPrizes.forEach(prize => {
+        const isRemaining = valuesRemaining.includes(prize);
+        prizeBoard.innerHTML += `<li class="${isRemaining ? '' : 'eliminated'}">$${prize.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>`;
+      });
+    }
+
+    // Update the offers history on the right.
+    function updateOffersHistory() {
+      const historyList = document.getElementById('offersHistory');
+      historyList.innerHTML = '';
+      offersHistory.forEach((offer, index) => {
+        historyList.innerHTML += `<li>Offer ${index + 1}: $${offer.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>`;
+      });
+    }
+
+    // Replace the current interactive area.
+    function updateGameArea(htmlContent) {
+      gameArea.innerHTML = htmlContent;
+      updatePrizeBoard();
+      updateOffersHistory();
+    }
+
+    // Populate a select element with given options.
+    function populateSelect(selectId, optionsArray) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = '';
+      optionsArray.forEach(num => {
+        const option = document.createElement("option");
+        option.value = num;
+        option.textContent = num;
+        select.appendChild(option);
+      });
+    }
+
+    // Populate the personal box select on page load.
+    function populateInitialSelect() {
+      populateSelect("chosenBoxSelect", boxes);
+    }
+    populateInitialSelect();
+
+    // Initial box selection.
+    function chooseBox() {
+      const select = document.getElementById('chosenBoxSelect');
+      const value = parseInt(select.value, 10);
+      if (boxes.includes(value)) {
+        chosenBox = value;
+        boxesLeft = boxesLeft.filter(box => box !== chosenBox);
+        updateGameArea(`<p class="message">You have chosen box #${chosenBox}. Keep it safe!</p>`);
+        setTimeout(playRound, 1000);
+      } else {
+        alert("Invalid box number. Please choose one of the available boxes.");
+      }
+    }
+
+    // Calculate the banker's offer.
+    function getBankersOffer(values) {
+      const sum = values.reduce((acc, curr) => acc + curr, 0);
+      return sum / values.length;
+    }
+
+    // Main game round.
+    function playRound() {
+      if (currentRound >= rounds.length || boxesLeft.length === 0 || valuesRemaining.length <= 1) {
+        endGame();
+        return;
+      }
+      let boxesToOpen = rounds[currentRound];
+      if (boxesLeft.length < boxesToOpen) {
+        boxesToOpen = boxesLeft.length;
+      }
+      updateGameArea(`<p class="message">Round ${currentRound + 1}: Open ${boxesToOpen} box${boxesToOpen > 1 ? 'es' : ''}.</p>`);
+      openBoxes(boxesToOpen);
+    }
+
+    // Function to prompt for opening a single box.
+    function openBoxes(count) {
+      if (count === 0) {
+        offerDeal();
+        return;
+      }
+      let html = `<p class="message">Remaining boxes: ${boxesLeft.join(", ")}</p>
+                  <p class="message">Pick a box to open:</p>
+                  <select id="boxChoiceSelect"></select>
+                  <button onclick="submitBoxChoice(${count})">Submit</button>`;
+      updateGameArea(html);
+      populateSelect("boxChoiceSelect", boxesLeft);
+    }
+
+    // Process the player's box selection.
+    function submitBoxChoice(count) {
+      const select = document.getElementById('boxChoiceSelect');
+      const boxChoice = parseInt(select.value, 10);
+      if (!boxesLeft.includes(boxChoice)) {
+        alert("Invalid choice. Please choose one of the available boxes.");
+        return;
+      }
+      boxesLeft = boxesLeft.filter(b => b !== boxChoice);
+      const valueOpened = boxValues[boxChoice];
+      const index = valuesRemaining.indexOf(valueOpened);
+      if (index > -1) {
+        valuesRemaining.splice(index, 1);
+      }
+      updateGameArea(`<p class="message">Box #${boxChoice} contained: $${valueOpened.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>`);
+      setTimeout(() => {
+        openBoxes(count - 1);
+      }, 500);
+    }
+
+    // Offer a deal after a round.
+    function offerDeal() {
+      const offer = getBankersOffer(valuesRemaining);
+      // Save the current offer to history.
+      offersHistory.push(offer);
+      updateGameArea(`
+        <p class="message">The banker offers you: $${offer.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <p class="message">Deal or No Deal?</p>
+        <button onclick="acceptDeal(${offer})">Deal</button>
+        <button onclick="declineDeal()">No Deal</button>
+      `);
+    }
+
+    // Accepting the deal.
+    function acceptDeal(offer) {
+      updateGameArea(`
+        <p class="message">You accepted the deal of $${offer.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}!</p>
+        <p class="message">Your personal box (#${chosenBox}) contained: $${boxValues[chosenBox].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <p class="message">Thank you for playing!</p>
+        <button onclick="playAgain()">Play Again</button>
+      `);
+      if (offer > 100000) {
+        launchFireworks();
+      }
+    }
+
+    // Decline the deal and continue.
+    function declineDeal() {
+      currentRound++;
+      updateGameArea(`<p class="message">You declined the deal. Moving to the next round...</p>`);
+      setTimeout(playRound, 1000);
+    }
+
+    // End the game by revealing the personal box.
+    function endGame() {
+      updateGameArea(`
+        <p class="message">No more rounds! Revealing your personal box...</p>
+        <p class="message">Your box (#${chosenBox}) contained: $${boxValues[chosenBox].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <p class="message">Game Over.</p>
+        <button onclick="playAgain()">Play Again</button>
+      `);
+      if (boxValues[chosenBox] > 100000) {
+        launchFireworks();
+      }
+    }
+
+    // Reload the page to start a new game.
+    function playAgain() {
+      window.location.reload();
+    }
+
+    // Fireworks effect: continuously spawns fireworks for 10 seconds.
+    function launchFireworks() {
+      const container = document.getElementById("fireworksContainer");
+      container.innerHTML = "";
+      const duration = 10000; // 10 seconds
+      const endTime = Date.now() + duration;
+      
+      const interval = setInterval(() => {
+        if (Date.now() > endTime) {
+          clearInterval(interval);
+          return;
+        }
+        const firework = document.createElement("div");
+        firework.className = "firework";
+        firework.style.left = Math.random() * 100 + "vw";
+        firework.style.top = Math.random() * 100 + "vh";
+        container.appendChild(firework);
+        setTimeout(() => {
+          firework.remove();
+        }, 1500);
+      }, 200);
+    }
+
+    // Initial prize board update.
+    updatePrizeBoard();
+  </script>
+</body>
+</html>
